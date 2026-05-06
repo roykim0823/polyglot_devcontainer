@@ -110,7 +110,7 @@ see "Publishing" below).
 ```bash
 git clone https://github.com/<your-org>/polyglot_devcontainer.git
 cd polyglot_devcontainer
-docker build -f Dockerfile -t polyglot-devcontainer:dev .
+docker build -f .devcontainer/Dockerfile -t polyglot-devcontainer:dev .devcontainer
 docker run -it --rm polyglot-devcontainer:dev bash
 # Inside container — sanity-check the toolchains:
 clang --version              # → clang 19.x
@@ -155,7 +155,7 @@ name: Publish
 on:
   push:
     branches: [main]
-    paths: ["Dockerfile", "devcontainer.json"]
+    paths: [".devcontainer/Dockerfile", ".devcontainer/devcontainer.json"]
 permissions: { contents: read, packages: write }
 jobs:
   build:
@@ -169,7 +169,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v5
         with:
-          context: .
+          context: .devcontainer
+          file: .devcontainer/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/polyglot-devcontainer:latest
 ```
