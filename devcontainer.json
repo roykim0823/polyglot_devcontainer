@@ -1,0 +1,152 @@
+// For format details, see https://aka.ms/devcontainer.json
+{
+    "name": "AI Compiler Environment",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "LLVM_VERSION": "19",
+            "NODE_VERSION": "22"
+        }
+    },
+
+    // ── Runtime flags ────────────────────────────────────────────────────────
+    // SYS_PTRACE + unconfined seccomp are required for lldb/gdb to attach to
+    // processes inside the container.
+    "runArgs": [
+        "--cap-add=SYS_PTRACE",
+        "--security-opt",
+        "seccomp=unconfined"
+    ],
+
+    // ── Mounts ───────────────────────────────────────────────────────────────
+    // Share host Copilot credentials — container needs no re-login.
+    "mounts": [
+        // Share host Copilot credentials — no re-login needed inside container.
+        "source=${localEnv:HOME}/.copilot,target=/home/vscode/.copilot,type=bind,consistency=cached",
+        // Share host git config — preserves user.name, user.email, aliases, etc.
+        "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
+        // Share host SSH keys — enables git push/pull over SSH without re-setup.
+        "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached"
+    ],
+
+    // ── Compiler environment ─────────────────────────────────────────────────
+    "remoteEnv": {
+        "CC": "clang",
+        "CXX": "clang++",
+        "CCACHE_CONFIGPATH": "/etc/ccache.conf",
+        // Make typescript-language-server & pyright findable by LSP clients
+        "PATH": "${containerEnv:PATH}:/usr/lib/node_modules/.bin"
+    },
+    // ── Extensions ───────────────────────────────────────────────────────────
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                // C++ ─────────────────────────────────────────────────────────
+                "llvm-vs-code-extensions.vscode-clangd",
+                "vadimcn.vscode-lldb",
+                // Python ──────────────────────────────────────────────────────
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "charliermarsh.ruff",
+                // TypeScript / JavaScript ─────────────────────────────────────
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                // Rust ────────────────────────────────────────────────────────
+                "rust-lang.rust-analyzer",
+                // General ─────────────────────────────────────────────────────
+                "EditorConfig.EditorConfig",
+                "streetsidesoftware.code-spell-checker"
+            ],
+            "settings": {
+                // ── Shell ────────────────────────────────────────────────────
+                "terminal.integrated.defaultProfile.linux": "bash",
+                // ── Editor (global) ──────────────────────────────────────────
+                "editor.formatOnSave": true,
+                "editor.rulers": [
+                    100
+                ],
+                "editor.inlayHints.enabled": "on",
+                "editor.codeActionsOnSave": {
+                    "source.fixAll.eslint": "explicit"
+                },
+                // ── C++ / clangd ─────────────────────────────────────────────
+                // Disable ms-cpptools IntelliSense; clangd takes over entirely.
+                "C_Cpp.intelliSenseEngine": "disabled",
+                "clangd.path": "/usr/bin/clangd",
+                "clangd.arguments": [
+                    "--background-index",
+                    "--clang-tidy",
+                    "--completion-style=detailed",
+                    "--header-insertion=iwyu",
+                    "--suggest-missing-includes",
+                    "--cross-file-rename",
+                    "--function-arg-placeholders=true",
+                    "--inlay-hints=true",
+                    "--pch-storage=memory"
+                ],
+                "clangd.inlayHints.enabled": true,
+                "[cpp]": {
+                    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+                },
+                "[c]": {
+                    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+                },
+                // ── Python / Pylance ─────────────────────────────────────────
+                "python.languageServer": "Pylance",
+                "python.analysis.typeCheckingMode": "basic",
+                "python.analysis.autoImportCompletions": true,
+                "python.analysis.indexing": true,
+                "python.analysis.inlayHints.variableTypes": true,
+                "python.analysis.inlayHints.functionReturnTypes": true,
+                "python.analysis.inlayHints.callArgumentNames": "partial",
+                "python.analysis.inlayHints.pytestParameters": true,
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff",
+                    "editor.formatOnSave": true,
+                    "editor.codeActionsOnSave": {
+                        "source.fixAll.ruff": "explicit",
+                        "source.organizeImports.ruff": "explicit"
+                    }
+                },
+                // ── TypeScript ───────────────────────────────────────────────
+                // Point VS Code at the globally installed typescript.
+                "typescript.tsdk": "/usr/lib/node_modules/typescript/lib",
+                "typescript.enablePromptUseWorkspaceTsdk": true,
+                "typescript.inlayHints.parameterNames.enabled": "all",
+                "typescript.inlayHints.parameterTypes.enabled": true,
+                "typescript.inlayHints.variableTypes.enabled": true,
+                "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
+                "typescript.inlayHints.enumMemberValues.enabled": true,
+                "[typescript]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[typescriptreact]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                // ── JavaScript ───────────────────────────────────────────────
+                "javascript.inlayHints.parameterNames.enabled": "all",
+                "javascript.inlayHints.variableTypes.enabled": true,
+                "javascript.inlayHints.functionLikeReturnTypes.enabled": true,
+                "[javascript]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                "[javascriptreact]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },
+                // ── ESLint (TS + JS) ─────────────────────────────────────────
+                "eslint.validate": [
+                    "javascript",
+                    "javascriptreact",
+                    "typescript",
+                    "typescriptreact"
+                ]
+            }
+        }
+    },
+	"remoteUser": "vscode",
+	"features": {
+		"ghcr.io/devcontainers/features/git:1": {},
+		"ghcr.io/devcontainers/features/node:2": {},
+		"ghcr.io/devcontainer-config/features/dot-config:4": {}
+	}
+}

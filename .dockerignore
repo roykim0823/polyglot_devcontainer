@@ -1,0 +1,29 @@
+# Build / test artefacts
+build/
+out/
+target/
+dist/
+.venv/
+
+# Caches
+.cache/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.hypothesis/
+.cargo/.package-cache
+
+# IDE / editor / OS
+.idea/
+.vscode/
+!.vscode/settings.json.example
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git
+.git/

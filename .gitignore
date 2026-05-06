@@ -1,0 +1,11 @@
+# Local build artefacts
+/build/
+/dist/
+
+# IDE / editor / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
