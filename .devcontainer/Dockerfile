@@ -107,7 +107,9 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
 # own isolated env but lives on PATH (~/.local/bin):
 #   C++ side (back the matching CMake options / pre-commit hooks):
 #     cpplint        → ENABLE_CPPLINT
-#     cmake-format   → matches .cmake-format.yaml + pre-commit hook
+#     cmakelang      → provides cmake-format / cmake-lint executables
+#                      (the `cmake-format` PyPI package is a stub with no
+#                      entrypoints; uv tool install rejects it)
 #     pre-commit     → .pre-commit-config.yaml runner
 #     conan          → DEPENDENCY_MANAGER=CONAN
 #   Python side (sibling python_template uses these — keeps one container
@@ -118,7 +120,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
 #     pip-audit      → CVE check for installed deps
 #     commitizen     → optional Conventional Commits helper (`cz commit`)
 RUN "${HOME}/.local/bin/uv" tool install cpplint \
-    && "${HOME}/.local/bin/uv" tool install cmake-format \
+    && "${HOME}/.local/bin/uv" tool install cmakelang \
     && "${HOME}/.local/bin/uv" tool install pre-commit \
     && "${HOME}/.local/bin/uv" tool install conan \
     && "${HOME}/.local/bin/uv" tool install ruff \

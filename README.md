@@ -28,9 +28,10 @@ Built on `mcr.microsoft.com/devcontainers/cpp:2-ubuntu24.04`.
 ### Python (via `uv`)
 - Python 3.12 and 3.13 pre-installed (older minors via
   `uv python install` on demand)
-- uv tools (each in its own isolated env): `cpplint`, `cmake-format`,
-  `pre-commit`, `conan`, `ruff`, `mypy`, `bandit[toml]`, `pip-audit`,
-  `commitizen`
+- uv tools (each in its own isolated env): `cpplint`,
+  `cmakelang` (provides the `cmake-format` and `cmake-lint`
+  executables), `pre-commit`, `conan`, `ruff`, `mypy`,
+  `bandit[toml]`, `pip-audit`, `commitizen`
 
 ### Rust (via `rustup`)
 - Stable channel + components (`rustfmt`, `clippy`, `rust-src`,
