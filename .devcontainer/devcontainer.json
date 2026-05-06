@@ -1,11 +1,10 @@
 // For format details, see https://aka.ms/devcontainer.json
 {
-    "name": "AI Compiler Environment",
+    "name": "Polyglot Development Environment",
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "LLVM_VERSION": "19",
-            "NODE_VERSION": "22"
+            "LLVM_VERSION": "19"
         }
     },
 
@@ -19,10 +18,7 @@
     ],
 
     // ── Mounts ───────────────────────────────────────────────────────────────
-    // Share host Copilot credentials — container needs no re-login.
     "mounts": [
-        // Share host Copilot credentials — no re-login needed inside container.
-        "source=${localEnv:HOME}/.copilot,target=/home/vscode/.copilot,type=bind,consistency=cached",
         // Share host git config — preserves user.name, user.email, aliases, etc.
         "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,consistency=cached",
         // Share host SSH keys — enables git push/pull over SSH without re-setup.
@@ -33,9 +29,7 @@
     "remoteEnv": {
         "CC": "clang",
         "CXX": "clang++",
-        "CCACHE_CONFIGPATH": "/etc/ccache.conf",
-        // Make typescript-language-server & pyright findable by LSP clients
-        "PATH": "${containerEnv:PATH}:/usr/lib/node_modules/.bin"
+        "CCACHE_CONFIGPATH": "/etc/ccache.conf"
     },
     // ── Extensions ───────────────────────────────────────────────────────────
     "customizations": {
@@ -48,9 +42,6 @@
                 "ms-python.python",
                 "ms-python.vscode-pylance",
                 "charliermarsh.ruff",
-                // TypeScript / JavaScript ─────────────────────────────────────
-                "dbaeumer.vscode-eslint",
-                "esbenp.prettier-vscode",
                 // Rust ────────────────────────────────────────────────────────
                 "rust-lang.rust-analyzer",
                 // General ─────────────────────────────────────────────────────
@@ -66,9 +57,6 @@
                     100
                 ],
                 "editor.inlayHints.enabled": "on",
-                "editor.codeActionsOnSave": {
-                    "source.fixAll.eslint": "explicit"
-                },
                 // ── C++ / clangd ─────────────────────────────────────────────
                 // Disable ms-cpptools IntelliSense; clangd takes over entirely.
                 "C_Cpp.intelliSenseEngine": "disabled",
@@ -107,46 +95,9 @@
                         "source.fixAll.ruff": "explicit",
                         "source.organizeImports.ruff": "explicit"
                     }
-                },
-                // ── TypeScript ───────────────────────────────────────────────
-                // Point VS Code at the globally installed typescript.
-                "typescript.tsdk": "/usr/lib/node_modules/typescript/lib",
-                "typescript.enablePromptUseWorkspaceTsdk": true,
-                "typescript.inlayHints.parameterNames.enabled": "all",
-                "typescript.inlayHints.parameterTypes.enabled": true,
-                "typescript.inlayHints.variableTypes.enabled": true,
-                "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
-                "typescript.inlayHints.enumMemberValues.enabled": true,
-                "[typescript]": {
-                    "editor.defaultFormatter": "esbenp.prettier-vscode"
-                },
-                "[typescriptreact]": {
-                    "editor.defaultFormatter": "esbenp.prettier-vscode"
-                },
-                // ── JavaScript ───────────────────────────────────────────────
-                "javascript.inlayHints.parameterNames.enabled": "all",
-                "javascript.inlayHints.variableTypes.enabled": true,
-                "javascript.inlayHints.functionLikeReturnTypes.enabled": true,
-                "[javascript]": {
-                    "editor.defaultFormatter": "esbenp.prettier-vscode"
-                },
-                "[javascriptreact]": {
-                    "editor.defaultFormatter": "esbenp.prettier-vscode"
-                },
-                // ── ESLint (TS + JS) ─────────────────────────────────────────
-                "eslint.validate": [
-                    "javascript",
-                    "javascriptreact",
-                    "typescript",
-                    "typescriptreact"
-                ]
+                }
             }
         }
     },
-	"remoteUser": "vscode",
-	"features": {
-		"ghcr.io/devcontainers/features/git:1": {},
-		"ghcr.io/devcontainers/features/node:2": {},
-		"ghcr.io/devcontainer-config/features/dot-config:4": {}
-	}
+    "remoteUser": "vscode"
 }

@@ -1,7 +1,6 @@
 FROM mcr.microsoft.com/devcontainers/cpp:2-ubuntu24.04
 
 ARG LLVM_VERSION=19
-ARG NODE_VERSION=22
 ARG USERNAME=vscode
 
 # Use bash with pipefail for all RUN commands
@@ -73,23 +72,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -sf /usr/bin/ccache /usr/local/bin/clang++ \
     && ln -sf /usr/bin/ccache /usr/local/bin/cc \
     && ln -sf /usr/bin/ccache /usr/local/bin/c++
-
-# ── Node.js ───────────────────────────────────────────────────────────────────
-RUN curl -fsSL "https://deb.nodesource.com/setup_${NODE_VERSION}.x" | bash - \
-    && apt-get install -y --no-install-recommends nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
-# ── LSP servers (TypeScript / JavaScript / Python) ───────────────────────────
-# Major versions are pinned to keep image rebuilds reproducible while still
-# picking up patch/minor fixes. Bump the majors deliberately when needed.
-RUN npm install -g \
-    typescript@^5 \
-    typescript-language-server@^4 \
-    pyright@^1 \
-    vscode-langservers-extracted@^4 \
-    @typescript-eslint/parser@^8 \
-    @typescript-eslint/eslint-plugin@^8 \
-    eslint@^9
 
 # ── User-level setup ──────────────────────────────────────────────────────────
 USER ${USERNAME}
