@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/cpp:2-ubuntu24.04
 
 ARG LLVM_VERSION=19
+ARG CMAKE_VERSION=3.31.12
 ARG USERNAME=vscode
 
 # Use bash with pipefail for all RUN commands
@@ -72,6 +73,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -sf /usr/bin/ccache /usr/local/bin/clang++ \
     && ln -sf /usr/bin/ccache /usr/local/bin/cc \
     && ln -sf /usr/bin/ccache /usr/local/bin/c++
+
+# ── CMake ────────────────────────────────────────────────────────────────────
+# Ubuntu 24.04 ships CMake 3.28; full C++20 modules support (esp. `import std`)
+# needs 3.30+. Install Kitware's prebuilt tarball into /opt and symlink into
+# /usr/local/bin so it shadows the apt-installed cmake without uninstalling it.
+RUN ARCH="$(uname -m)" \
+    && curl -fsSL "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-${ARCH}.tar.gz" \
+        | tar -xz -C /opt \
+    && for bin in cmake ctest cpack ccmake; do \
+         ln -sf "/opt/cmake-${CMAKE_VERSION}-linux-${ARCH}/bin/${bin}" "/usr/local/bin/${bin}"; \
+       done
 
 # ── User-level setup ──────────────────────────────────────────────────────────
 USER ${USERNAME}
