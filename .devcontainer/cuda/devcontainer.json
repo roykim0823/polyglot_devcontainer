@@ -1,20 +1,31 @@
-// For format details, see https://aka.ms/devcontainer.json
+// CUDA variant of the polyglot dev container. Bakes the NVIDIA userspace
+// CUDA toolkit into the image (WITH_CUDA=true) and requests host GPU access
+// via --gpus=all. Pick this config in "Dev Containers: Reopen in Container"
+// when running on an NVIDIA host that has the nvidia-container-toolkit set up.
+// On non-GPU hosts, use the sibling .devcontainer/devcontainer.json instead.
 {
-    "name": "Polyglot Development Environment (CPU)",
+    "name": "Polyglot Development Environment (CUDA)",
     "build": {
-        "dockerfile": "Dockerfile",
+        "dockerfile": "../Dockerfile",
+        "context": "..",
         "args": {
-            "LLVM_VERSION": "19"
+            "LLVM_VERSION": "19",
+            "WITH_CUDA": "true",
+            "CUDA_APT_VERSION": "12-6"
         }
     },
 
     // ── Runtime flags ────────────────────────────────────────────────────────
     // SYS_PTRACE + unconfined seccomp are required for lldb/gdb to attach to
     // processes inside the container.
+    // --gpus=all exposes the host's NVIDIA GPUs (requires nvidia-container-toolkit
+    // on the host). Container creation fails here if the host has no GPU /
+    // toolkit — that's by design for this variant; use the CPU config instead.
     "runArgs": [
         "--cap-add=SYS_PTRACE",
         "--security-opt",
-        "seccomp=unconfined"
+        "seccomp=unconfined",
+        "--gpus=all"
     ],
 
     // ── Compiler environment ─────────────────────────────────────────────────
@@ -36,6 +47,8 @@
                 "charliermarsh.ruff",
                 // Rust ────────────────────────────────────────────────────────
                 "rust-lang.rust-analyzer",
+                // CUDA ────────────────────────────────────────────────────────
+                "nvidia.nsight-vscode-edition",
                 // General ─────────────────────────────────────────────────────
                 "EditorConfig.EditorConfig",
                 "streetsidesoftware.code-spell-checker"

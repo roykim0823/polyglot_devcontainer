@@ -3,6 +3,11 @@ FROM mcr.microsoft.com/devcontainers/cpp:2-ubuntu24.04
 ARG LLVM_VERSION=19
 ARG CMAKE_VERSION=3.31.12
 ARG USERNAME=vscode
+# Set WITH_CUDA=true (via .devcontainer/cuda/devcontainer.json) to bake the
+# CUDA userspace toolkit into the image. The default (false) keeps the image
+# lean for hosts without an NVIDIA GPU.
+ARG WITH_CUDA=false
+ARG CUDA_APT_VERSION=12-6
 
 # Use bash with pipefail for all RUN commands
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -84,6 +89,25 @@ RUN ARCH="$(uname -m)" \
     && for bin in cmake ctest cpack ccmake; do \
          ln -sf "/opt/cmake-${CMAKE_VERSION}-linux-${ARCH}/bin/${bin}" "/usr/local/bin/${bin}"; \
        done
+
+# ── CUDA toolkit (optional) ──────────────────────────────────────────────────
+# Installed only when WITH_CUDA=true (set by .devcontainer/cuda/devcontainer.json).
+# The driver itself stays on the host and is passed in via --gpus=all at run
+# time; this layer ships only the userspace toolkit (nvcc, headers, libs).
+# Pick a toolkit version <= the host driver's max CUDA (driver 565 -> 12.7,
+# so 12-6 packages are safe).
+RUN if [ "${WITH_CUDA}" = "true" ]; then \
+        curl -fsSLO "https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb" \
+        && dpkg -i cuda-keyring_1.1-1_all.deb && rm cuda-keyring_1.1-1_all.deb \
+        && apt-get update && apt-get install -y --no-install-recommends \
+               "cuda-toolkit-${CUDA_APT_VERSION}" \
+        && apt-get clean && rm -rf /var/lib/apt/lists/* ; \
+    fi
+# PATH/LD_LIBRARY_PATH entries are harmless when /usr/local/cuda is absent
+# (the dynamic linker silently skips missing directories), so they can stay
+# unconditional and keep this layer simple.
+ENV PATH=/usr/local/cuda/bin:${PATH} \
+    LD_LIBRARY_PATH=/usr/local/cuda/lib64
 
 # ── User-level setup ──────────────────────────────────────────────────────────
 USER ${USERNAME}
