@@ -70,14 +70,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ── ccache ───────────────────────────────────────────────────────────────────
+# Expose compilers via ccache wrapper *scripts* rather than symlinks to
+# /usr/bin/ccache. Bazel's auto-detected C++ toolchain realpath-collapses a
+# /usr/local/bin/clang -> /usr/bin/ccache symlink down to /usr/bin/ccache and
+# invokes it directly; ccache then parses the first compiler flag (e.g.
+# -U_FORTIFY_SOURCE) as its own -U option and aborts. A regular-file wrapper
+# survives realpath and preserves the "ccache <real-compiler>" invocation form.
+# /usr/local/bin precedes /usr/bin on PATH, so each wrapper dispatches to the
+# real compiler at /usr/bin/<name> (clang->clang, cc->gcc, c++->g++).
+# hadolint ignore=SC2016
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ccache \
     && rm -rf /var/lib/apt/lists/* \
     && echo "max_size = 0" > /etc/ccache.conf \
-    && ln -sf /usr/bin/ccache /usr/local/bin/clang \
-    && ln -sf /usr/bin/ccache /usr/local/bin/clang++ \
-    && ln -sf /usr/bin/ccache /usr/local/bin/cc \
-    && ln -sf /usr/bin/ccache /usr/local/bin/c++
+    && for name in clang clang++ cc c++; do \
+         printf '#!/bin/sh\nexec /usr/bin/ccache /usr/bin/%s "$@"\n' "${name}" \
+           > "/usr/local/bin/${name}" \
+         && chmod +x "/usr/local/bin/${name}"; \
+       done
 
 # ── CMake ────────────────────────────────────────────────────────────────────
 # Ubuntu 24.04 ships CMake 3.28; full C++20 modules support (esp. `import std`)
