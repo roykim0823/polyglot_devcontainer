@@ -2,6 +2,10 @@
 /build/
 /dist/
 
+# Project work — separate repos, not part of the devcontainer template
+/project/
+/code/
+
 # IDE / editor / OS
 .idea/
 .vscode/
